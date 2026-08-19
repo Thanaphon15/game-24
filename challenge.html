@@ -9,6 +9,10 @@
 <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
+  <div id="auth-gate-overlay" class="auth-gate-overlay">
+    <div class="auth-gate-spinner"></div>
+  </div>
+
   <nav class="site-nav">
     <div class="nav-inner">
       <a href="index.html" class="brand">GAME<span>24</span></a>
@@ -121,10 +125,21 @@
   <script src="js/auth.js"></script>
   <script src="js/game.js"></script>
   <script>
-    UI24.initNav();
-    Auth24.renderNavAuthState();
-    const game = new Game24({ mode: 'challenge' });
-    game.init();
+    (async () => {
+      const overlay = document.getElementById('auth-gate-overlay');
+      const user = SUPABASE_CONFIGURED ? await Auth24.getCurrentUser() : null;
+
+      if (SUPABASE_CONFIGURED && !user) {
+        location.href = 'index.html';
+        return;
+      }
+
+      overlay.remove();
+      UI24.initNav();
+      Auth24.renderNavAuthState();
+      const game = new Game24({ mode: 'challenge' });
+      game.init();
+    })();
   </script>
 </body>
 </html>

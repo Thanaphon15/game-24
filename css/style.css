@@ -387,6 +387,80 @@ a {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+/* ---------- Auth gate (login-first home screen) ---------- */
+.auth-gate-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  z-index: 100;
+}
+
+.auth-gate-spinner {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid var(--surface-2);
+  border-top-color: var(--primary);
+  animation: gate-spin 0.7s linear infinite;
+}
+
+@keyframes gate-spin {
+  to { transform: rotate(360deg); }
+}
+
+.gate-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.gate-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 32px 26px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.gate-logo {
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: var(--text);
+}
+
+.gate-logo .accent {
+  background: linear-gradient(90deg, var(--primary-2), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gate-school {
+  color: var(--primary-2);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+
+.gate-sub {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin: 6px 0 22px;
+}
+
+.gate-card .field {
+  text-align: left;
+}
+
 /* ---------- Auth forms ---------- */
 .auth-wrap {
   max-width: 420px;
@@ -425,12 +499,12 @@ a {
 .field input,
 .field select {
   width: 100%;
-  padding: 11px 14px;
+  padding: 13px 14px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--surface-2);
   background: var(--bg-soft);
   color: var(--text);
-  font-size: 14px;
+  font-size: 16px; /* 16px+ stops iOS Safari auto-zooming the page on focus */
 }
 
 .field input:focus,
@@ -495,12 +569,12 @@ a {
 .admin-toolbar input {
   flex: 1;
   min-width: 220px;
-  padding: 11px 14px;
+  padding: 13px 14px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--surface-2);
   background: var(--bg-soft);
   color: var(--text);
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .admin-toolbar input:focus {
@@ -601,12 +675,12 @@ a {
 }
 
 .leaderboard-filters select {
-  padding: 9px 14px;
+  padding: 11px 14px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--surface-2);
   background: var(--surface);
   color: var(--text);
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .leaderboard-list {
