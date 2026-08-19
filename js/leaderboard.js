@@ -51,26 +51,54 @@
     }));
   }
 
-  function renderLeaderboard(container, rows) {
-    container.innerHTML = '';
-    if (!rows.length) {
-      container.innerHTML = '<p class="leaderboard-note">ยังไม่มีข้อมูลผู้เล่นในระดับชั้นนี้</p>';
+  const prefersReducedMotion = () =>
+    global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function animateCount(el, target, duration = 700) {
+    if (prefersReducedMotion() || target === 0) {
+      el.textContent = target.toLocaleString();
       return;
     }
-    rows.forEach((row, idx) => {
-      const rank = idx + 1;
-      const el = document.createElement('div');
-      el.className = `rank-row${rank <= 3 ? ` top-${rank}` : ''}`;
-      el.innerHTML = `
-        <div class="rank">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}</div>
-        <div>
-          <div class="rank-name">${row.name}</div>
-          <div class="rank-class">${row.classroom} · ${row.school}</div>
-        </div>
-        <div class="rank-score">${row.score.toLocaleString()}</div>
-      `;
-      container.appendChild(el);
-    });
+    const start = performance.now();
+    function tick(now) {
+      const progress = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      el.textContent = Math.round(target * eased).toLocaleString();
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function renderLeaderboard(container, rows) {
+    const isFirstRender = container.children.length === 0;
+    if (!isFirstRender) container.classList.add('leaderboard-fading');
+
+    setTimeout(() => {
+      container.innerHTML = '';
+      container.classList.remove('leaderboard-fading');
+
+      if (!rows.length) {
+        container.innerHTML = '<p class="leaderboard-note">ยังไม่มีข้อมูลผู้เล่นในระดับชั้นนี้</p>';
+        return;
+      }
+
+      rows.forEach((row, idx) => {
+        const rank = idx + 1;
+        const el = document.createElement('div');
+        el.className = `rank-row rank-enter${rank <= 3 ? ` top-${rank}` : ''}`;
+        el.style.animationDelay = `${Math.min(idx, 12) * 45}ms`;
+        el.innerHTML = `
+          <div class="rank">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}</div>
+          <div>
+            <div class="rank-name">${row.name}</div>
+            <div class="rank-class">${row.classroom} · ${row.school}</div>
+          </div>
+          <div class="rank-score">0</div>
+        `;
+        container.appendChild(el);
+        animateCount(el.querySelector('.rank-score'), row.score);
+      });
+    }, isFirstRender ? 0 : 120);
   }
 
   global.Leaderboard24 = { SCHOOL_NAME, fetchLeaderboard, renderLeaderboard };

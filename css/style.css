@@ -687,6 +687,11 @@ a {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  transition: opacity 0.15s ease;
+}
+
+.leaderboard-list.leaderboard-fading {
+  opacity: 0;
 }
 
 .rank-row {
@@ -698,6 +703,21 @@ a {
   border-radius: var(--radius-sm);
   padding: 14px 18px;
   border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.rank-row:hover {
+  transform: translateY(-2px) translateX(2px);
+  border-color: rgba(124, 92, 255, 0.35);
+}
+
+.rank-row.rank-enter {
+  animation: rank-enter-kf 0.45s ease both;
+}
+
+@keyframes rank-enter-kf {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .rank-row .rank {
@@ -714,6 +734,19 @@ a {
 .rank-row.top-1 {
   border-color: rgba(255, 212, 71, 0.5);
   box-shadow: 0 0 0 1px rgba(255, 212, 71, 0.2);
+  animation: rank-enter-kf 0.45s ease both, top1-glow-kf 2.4s ease-in-out 0.5s infinite;
+}
+
+@keyframes top1-glow-kf {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(255, 212, 71, 0.2); }
+  50% { box-shadow: 0 0 0 1px rgba(255, 212, 71, 0.45), 0 0 16px rgba(255, 212, 71, 0.25); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rank-row.rank-enter,
+  .rank-row.top-1 {
+    animation: none;
+  }
 }
 
 .rank-name {
