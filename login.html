@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LOGIN — GAME24 ONLINE</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="brand">GAME<span>24</span></a>
+      <button class="nav-toggle" aria-label="เมนู"><span></span><span></span><span></span></button>
+      <ul class="nav-menu">
+        <li><a href="index.html">หน้าหลัก</a></li>
+        <li><a href="practice.html">PRACTICE</a></li>
+        <li><a href="challenge.html">CHALLENGE</a></li>
+        <li><a href="ranking.html">LEADERBOARD</a></li>
+        <li><a href="login.html" class="active">LOGIN</a></li>
+        <li><a href="register.html" class="nav-cta">REGISTER</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="auth-wrap">
+      <h2>เข้าสู่ระบบ</h2>
+      <p class="auth-sub">เก็บคะแนนสะสมและขึ้นอันดับ Leaderboard ของคุณ</p>
+      <form id="login-form">
+        <div class="field">
+          <label for="email">อีเมล</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required>
+        </div>
+        <div class="field">
+          <label for="password">รหัสผ่าน</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">เข้าสู่ระบบ</button>
+      </form>
+      <div id="login-note" class="auth-note hidden"></div>
+      <p class="auth-switch">ยังไม่มีบัญชี? <a href="register.html">สมัครสมาชิก</a></p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    GAME24 ONLINE · TANTRARAK SCHOOL — เกมคณิตศาสตร์สำหรับนักเรียนมัธยมศึกษา
+  </footer>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    UI24.initNav();
+    Auth24.renderNavAuthState();
+    Auth24.bindForm('login-form', 'login-note', Auth24.handleLogin);
+  </script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+/* responsive.css — breakpoints for tablet & mobile */
+@media (max-width: 860px) {
+  .feature-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .nav-toggle {
+    display: flex;
+  }
+
+  .nav-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    background: var(--bg-soft);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px 16px 16px;
+    gap: 4px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease;
+  }
+
+  .nav-menu.open {
+    max-height: 400px;
+  }
+
+  .nav-menu a {
+    padding: 12px 14px;
+  }
+
+  .mode-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .level-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+  }
+
+  .level-btn {
+    padding: 10px 2px;
+  }
+
+  .level-btn .lv-num {
+    font-size: 16px;
+  }
+
+  .level-btn .lv-name {
+    font-size: 9px;
+  }
+
+  .number-card {
+    width: 62px;
+    height: 76px;
+    font-size: 26px;
+  }
+
+  .keypad {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .op-btn {
+    padding: 13px 0;
+    font-size: 17px;
+  }
+
+  #expression-display {
+    font-size: 18px;
+  }
+
+  .complete-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rank-row {
+    grid-template-columns: 40px 1fr auto;
+    padding: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .number-card {
+    width: 54px;
+    height: 68px;
+    font-size: 22px;
+  }
+
+  .stat-chip {
+    min-width: 60px;
+    padding: 6px 8px;
+  }
+}

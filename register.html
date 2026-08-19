@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>REGISTER — GAME24 ONLINE</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="brand">GAME<span>24</span></a>
+      <button class="nav-toggle" aria-label="เมนู"><span></span><span></span><span></span></button>
+      <ul class="nav-menu">
+        <li><a href="index.html">หน้าหลัก</a></li>
+        <li><a href="practice.html">PRACTICE</a></li>
+        <li><a href="challenge.html">CHALLENGE</a></li>
+        <li><a href="ranking.html">LEADERBOARD</a></li>
+        <li><a href="login.html">LOGIN</a></li>
+        <li><a href="register.html" class="nav-cta active">REGISTER</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="auth-wrap">
+      <h2>สมัครสมาชิก</h2>
+      <p class="auth-sub">สร้างบัญชีเพื่อบันทึกคะแนนสะสมและแข่งขันบน Leaderboard</p>
+      <form id="register-form">
+        <div class="field">
+          <label for="name">ชื่อ-นามสกุล / ชื่อเล่น</label>
+          <input type="text" id="name" name="name" placeholder="เช่น สมชาย ใจดี" required>
+        </div>
+        <div class="field">
+          <label for="reg-email">อีเมล</label>
+          <input type="email" id="reg-email" name="email" placeholder="you@example.com" required>
+        </div>
+        <div class="field">
+          <label for="reg-password">รหัสผ่าน</label>
+          <input type="password" id="reg-password" name="password" placeholder="••••••••" required>
+        </div>
+        <div class="field">
+          <label for="school">โรงเรียน</label>
+          <input type="text" id="school" name="school" value="TANTRARAK SCHOOL" readonly>
+        </div>
+        <div class="field">
+          <label for="grade">ระดับชั้น</label>
+          <select id="grade" name="grade" required>
+            <option value="">เลือกระดับชั้น</option>
+            <option value="ม.1">มัธยมศึกษาปีที่ 1</option>
+            <option value="ม.2">มัธยมศึกษาปีที่ 2</option>
+            <option value="ม.3">มัธยมศึกษาปีที่ 3</option>
+            <option value="ม.4">มัธยมศึกษาปีที่ 4</option>
+            <option value="ม.5">มัธยมศึกษาปีที่ 5</option>
+            <option value="ม.6">มัธยมศึกษาปีที่ 6</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="classroom">ห้องเรียน</label>
+          <input type="text" id="classroom" name="classroom" placeholder="เช่น ม.3/1">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">สมัครสมาชิก</button>
+      </form>
+      <div id="register-note" class="auth-note hidden"></div>
+      <p class="auth-switch">มีบัญชีอยู่แล้ว? <a href="login.html">เข้าสู่ระบบ</a></p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    GAME24 ONLINE · TANTRARAK SCHOOL — เกมคณิตศาสตร์สำหรับนักเรียนมัธยมศึกษา
+  </footer>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    UI24.initNav();
+    Auth24.renderNavAuthState();
+    Auth24.bindForm('register-form', 'register-note', Auth24.handleRegister);
+  </script>
+</body>
+</html>

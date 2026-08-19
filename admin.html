@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ADMIN — GAME24 ONLINE</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="brand">GAME<span>24</span></a>
+      <button class="nav-toggle" aria-label="เมนู"><span></span><span></span><span></span></button>
+      <ul class="nav-menu">
+        <li><a href="index.html">หน้าหลัก</a></li>
+        <li><a href="practice.html">PRACTICE</a></li>
+        <li><a href="challenge.html">CHALLENGE</a></li>
+        <li><a href="ranking.html">LEADERBOARD</a></li>
+        <li><a href="login.html">LOGIN</a></li>
+        <li><a href="register.html" class="nav-cta">REGISTER</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container" style="padding-top:40px; padding-bottom:60px;">
+    <h1 class="section-title" style="text-align:left; margin-bottom:4px;">🛡️ ADMIN — จัดการผู้เล่น</h1>
+    <p class="section-sub" style="text-align:left; margin-bottom:24px;">TANTRARAK SCHOOL · ค้นหา ระงับ หรือลบบัญชีผู้เล่นที่ก่อกวนระบบ</p>
+
+    <div id="admin-gate" class="auth-note hidden" style="max-width:520px;"></div>
+
+    <section id="admin-panel" class="panel hidden">
+      <div class="season-toolbar">
+        <div>
+          <span class="admin-count">ซีซันปัจจุบัน: <strong id="season-number">-</strong></span>
+          <span class="admin-count" id="season-started" style="margin-left:12px;"></span>
+        </div>
+        <button id="new-season-btn" class="btn btn-danger btn-sm">🔄 เริ่มซีซันใหม่ (ล้างคะแนน)</button>
+      </div>
+
+      <div class="admin-toolbar">
+        <input type="text" id="admin-search" placeholder="ค้นหาชื่อผู้เล่น...">
+        <span class="admin-count">ทั้งหมด <strong id="admin-count">0</strong> คน</span>
+      </div>
+      <div id="admin-list" class="admin-list"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    GAME24 ONLINE · TANTRARAK SCHOOL — เกมคณิตศาสตร์สำหรับนักเรียนมัธยมศึกษา
+  </footer>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin.js"></script>
+  <script>
+    UI24.initNav();
+    Auth24.renderNavAuthState();
+
+    (async () => {
+      const gateEl = document.getElementById('admin-gate');
+      const panelEl = document.getElementById('admin-panel');
+      const user = await Admin24.guardAdminPage(gateEl, panelEl);
+      if (!user) return;
+
+      const listEl = document.getElementById('admin-list');
+      const searchEl = document.getElementById('admin-search');
+      const countEl = document.getElementById('admin-count');
+      const seasonNumberEl = document.getElementById('season-number');
+      const seasonStartedEl = document.getElementById('season-started');
+      const newSeasonBtn = document.getElementById('new-season-btn');
+      let currentRows = [];
+      let currentSeason = 1;
+
+      async function refreshSeason() {
+        const info = await Admin24.getSeasonInfo();
+        currentSeason = info.current_season;
+        seasonNumberEl.textContent = currentSeason;
+        seasonStartedEl.textContent = info.season_started_at
+          ? `เริ่มเมื่อ ${new Date(info.season_started_at).toLocaleDateString('th-TH')}`
+          : '';
+      }
+
+      newSeasonBtn.addEventListener('click', async () => {
+        const confirmed = confirm(
+          `ยืนยันเริ่มซีซันใหม่?\nกระดาน Leaderboard และคะแนนสะสมของทุกคนจะรีเซ็ตเป็น 0 ทันที (ประวัติคะแนนซีซันเก่ายังเก็บไว้ในระบบ ไม่ถูกลบ)`
+        );
+        if (!confirmed) return;
+        const ok = await Admin24.startNewSeason(currentSeason);
+        if (ok) {
+          await refreshSeason();
+          alert(`เริ่มซีซัน ${currentSeason + 1} แล้ว`);
+        } else {
+          alert('เริ่มซีซันใหม่ไม่สำเร็จ');
+        }
+      });
+
+      refreshSeason();
+
+      async function refresh() {
+        currentRows = await Admin24.loadUsers(searchEl.value.trim());
+        countEl.textContent = currentRows.length;
+        Admin24.renderUsers(listEl, currentRows, {
+          onToggleBan: async row => {
+            const ok = await Admin24.toggleBan(row.id, row.is_banned);
+            if (ok) refresh();
+            else alert('เปลี่ยนสถานะไม่สำเร็จ');
+          },
+          onDelete: async row => {
+            const confirmed = confirm(`ยืนยันลบบัญชี "${row.name}" ถาวร?\nการกระทำนี้ไม่สามารถย้อนกลับได้`);
+            if (!confirmed) return;
+            const result = await Admin24.deleteUserPermanently(row.id);
+            if (result.ok) refresh();
+            else alert(result.message || 'ลบไม่สำเร็จ');
+          }
+        });
+      }
+
+      let debounceId;
+      searchEl.addEventListener('input', () => {
+        clearTimeout(debounceId);
+        debounceId = setTimeout(refresh, 250);
+      });
+
+      refresh();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LEADERBOARD — GAME24 ONLINE</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="brand">GAME<span>24</span></a>
+      <button class="nav-toggle" aria-label="เมนู"><span></span><span></span><span></span></button>
+      <ul class="nav-menu">
+        <li><a href="index.html">หน้าหลัก</a></li>
+        <li><a href="practice.html">PRACTICE</a></li>
+        <li><a href="challenge.html">CHALLENGE</a></li>
+        <li><a href="ranking.html" class="active">LEADERBOARD</a></li>
+        <li><a href="login.html">LOGIN</a></li>
+        <li><a href="register.html" class="nav-cta">REGISTER</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <header class="hero" style="padding-top:50px;">
+    <span class="hero-badge">เปิดดูได้โดยไม่ต้องล็อกอิน</span>
+    <h1>🏆 GAME24 <span class="accent">LEADERBOARD</span></h1>
+    <p id="school-name">TANTRARAK SCHOOL</p>
+    <p style="margin-top:6px;">อันดับผู้เล่นคะแนนสูงสุดจากโหมด Challenge ระดับ ม.1–ม.6</p>
+  </header>
+
+  <main class="leaderboard-wrap container">
+    <div class="leaderboard-filters">
+      <select id="grade-filter">
+        <option value="all">ทุกระดับชั้น</option>
+        <option value="ม.1">มัธยมศึกษาปีที่ 1</option>
+        <option value="ม.2">มัธยมศึกษาปีที่ 2</option>
+        <option value="ม.3">มัธยมศึกษาปีที่ 3</option>
+        <option value="ม.4">มัธยมศึกษาปีที่ 4</option>
+        <option value="ม.5">มัธยมศึกษาปีที่ 5</option>
+        <option value="ม.6">มัธยมศึกษาปีที่ 6</option>
+      </select>
+    </div>
+
+    <div id="leaderboard-list" class="leaderboard-list"></div>
+
+    <p class="leaderboard-note" id="leaderboard-source-note">
+      * ขณะนี้แสดงข้อมูลตัวอย่าง (Mockup) — เมื่อเชื่อมต่อระบบสมาชิกกับ Supabase แล้ว
+      หน้านี้จะแสดงคะแนนจริงของผู้เล่นแบบเรียลไทม์
+    </p>
+  </main>
+
+  <footer class="site-footer">
+    GAME24 ONLINE · TANTRARAK SCHOOL — เกมคณิตศาสตร์สำหรับนักเรียนมัธยมศึกษา
+  </footer>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/leaderboard.js"></script>
+  <script>
+    UI24.initNav();
+    Auth24.renderNavAuthState();
+    const listEl = document.getElementById('leaderboard-list');
+    const filterEl = document.getElementById('grade-filter');
+    const sourceNoteEl = document.getElementById('leaderboard-source-note');
+    if (SUPABASE_CONFIGURED) {
+      sourceNoteEl.textContent = '* ข้อมูลคะแนนจริงจากผู้เล่นที่ลงทะเบียน อัปเดตทุกครั้งที่มีผู้เล่นจบเกม Challenge';
+    }
+
+    async function load() {
+      const rows = await Leaderboard24.fetchLeaderboard({ grade: filterEl.value });
+      Leaderboard24.renderLeaderboard(listEl, rows);
+    }
+
+    filterEl.addEventListener('change', load);
+    load();
+  </script>
+</body>
+</html>

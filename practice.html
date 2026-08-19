@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PRACTICE — GAME24 ONLINE</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/game.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="brand">GAME<span>24</span></a>
+      <button class="nav-toggle" aria-label="เมนู"><span></span><span></span><span></span></button>
+      <ul class="nav-menu">
+        <li><a href="index.html">หน้าหลัก</a></li>
+        <li><a href="practice.html" class="active">PRACTICE</a></li>
+        <li><a href="challenge.html">CHALLENGE</a></li>
+        <li><a href="ranking.html">LEADERBOARD</a></li>
+        <li><a href="login.html">LOGIN</a></li>
+        <li><a href="register.html" class="nav-cta">REGISTER</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="game-wrap">
+    <section id="setup-panel" class="panel">
+      <h2>📘 PRACTICE MODE</h2>
+      <p class="panel-sub">ฝึกแก้โจทย์ 24 แบบไม่จำกัดเวลา เลือกระดับความยากแล้วเริ่มได้เลย</p>
+      <div class="level-grid">
+        <button class="level-btn" data-level="1"><span class="lv-num">1</span><span class="lv-name">Beginner</span><span class="lv-mult">×1.0</span></button>
+        <button class="level-btn" data-level="2"><span class="lv-num">2</span><span class="lv-name">Easy</span><span class="lv-mult">×1.2</span></button>
+        <button class="level-btn" data-level="3"><span class="lv-num">3</span><span class="lv-name">Medium</span><span class="lv-mult">×1.5</span></button>
+        <button class="level-btn" data-level="4"><span class="lv-num">4</span><span class="lv-name">Hard</span><span class="lv-mult">×2.0</span></button>
+        <button class="level-btn" data-level="5"><span class="lv-num">5</span><span class="lv-name">Expert</span><span class="lv-mult">×3.0</span></button>
+      </div>
+      <div class="panel-actions">
+        <button id="start-game-btn" class="btn btn-primary">เริ่มฝึกซ้อม</button>
+      </div>
+    </section>
+
+    <section id="game-panel" class="hidden">
+      <div class="game-topbar">
+        <span id="current-level-label" class="level-tag">LEVEL</span>
+        <div class="stat-row">
+          <div class="stat-chip">
+            <span class="stat-label">SCORE</span>
+            <span id="score-value" class="stat-value">0</span>
+          </div>
+          <div class="stat-chip">
+            <span class="stat-label">STREAK</span>
+            <span id="streak-value" class="stat-value">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cards-row" id="cards-row"></div>
+
+      <div class="expression-shell">
+        <div id="expression-display" class="empty">สร้างสมการของคุณที่นี่...</div>
+        <div id="feedback-container" class="feedback-container"></div>
+      </div>
+
+      <div class="keypad">
+        <button class="op-btn" id="op-open" data-op="(">(</button>
+        <button class="op-btn" id="op-close" data-op=")">)</button>
+        <button class="op-btn op-symbol" data-op="/">÷</button>
+        <button class="op-btn op-symbol" data-op="*">×</button>
+        <button class="op-btn op-symbol" data-op="-">−</button>
+        <button class="op-btn op-symbol" data-op="+">+</button>
+        <button class="op-btn" id="op-back">⌫</button>
+        <button class="op-btn" id="op-clear">C</button>
+      </div>
+
+      <div class="keypad-actions">
+        <button id="hint-btn" class="btn btn-ghost">💡 ดูเฉลย</button>
+        <button id="skip-btn" class="btn btn-outline">SKIP</button>
+        <button id="op-submit" class="btn btn-primary" disabled>✔ ตรวจคำตอบ</button>
+      </div>
+      <div id="hint-display" class="hidden"></div>
+
+      <div class="panel-actions" style="margin-top:22px;">
+        <button id="end-session-btn" class="btn btn-outline">จบเซสชันฝึกซ้อม</button>
+      </div>
+    </section>
+
+    <section id="complete-panel" class="panel hidden">
+      <h2>🎉 GAME COMPLETE</h2>
+      <p class="panel-sub">สรุปผลการฝึกซ้อมของคุณ</p>
+      <div class="complete-stats">
+        <div class="complete-stat"><span class="cs-label">SCORE</span><span id="final-score" class="cs-value">0</span></div>
+        <div class="complete-stat"><span class="cs-label">CORRECT</span><span id="final-correct" class="cs-value">0</span></div>
+        <div class="complete-stat"><span class="cs-label">WRONG</span><span id="final-wrong" class="cs-value">0</span></div>
+        <div class="complete-stat"><span class="cs-label">ACCURACY</span><span id="final-accuracy" class="cs-value">0%</span></div>
+        <div class="complete-stat"><span class="cs-label">BEST STREAK</span><span id="final-best-streak" class="cs-value">0</span></div>
+        <div class="complete-stat"><span class="cs-label">TIME</span><span id="final-time" class="cs-value">00:00</span></div>
+      </div>
+      <div class="complete-actions">
+        <button id="play-again-btn" class="btn btn-primary">PLAY AGAIN</button>
+        <a href="index.html" class="btn btn-outline">BACK TO HOME</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/puzzle.js"></script>
+  <script src="js/scoring.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/game.js"></script>
+  <script>
+    UI24.initNav();
+    Auth24.renderNavAuthState();
+    const game = new Game24({ mode: 'practice' });
+    game.init();
+  </script>
+</body>
+</html>

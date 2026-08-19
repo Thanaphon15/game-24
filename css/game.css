@@ -1,0 +1,410 @@
+/* game.css — level select, cards, keypad, timer, feedback, complete panel */
+.game-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 30px 20px 60px;
+}
+
+/* ---------- Setup / level select ---------- */
+.panel {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 28px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.panel h2 {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.panel .panel-sub {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 13px;
+  margin-bottom: 24px;
+}
+
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 26px;
+}
+
+.level-btn {
+  background: var(--bg-soft);
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 14px 6px;
+  color: var(--text-dim);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, transform 0.1s, color 0.15s;
+}
+
+.level-btn:hover {
+  transform: translateY(-2px);
+}
+
+.level-btn .lv-num {
+  display: block;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.level-btn .lv-name {
+  display: block;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.level-btn .lv-mult {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  margin-top: 4px;
+  color: var(--accent);
+}
+
+.level-btn.selected {
+  border-color: var(--primary);
+  background: rgba(124, 92, 255, 0.15);
+  color: var(--primary-2);
+}
+
+.level-btn.selected .lv-num {
+  color: var(--primary-2);
+}
+
+.panel-actions {
+  display: flex;
+  justify-content: center;
+}
+
+/* ---------- Game panel top bar ---------- */
+.game-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.level-tag {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--primary-2);
+  background: rgba(124, 92, 255, 0.15);
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+.stat-row {
+  display: flex;
+  gap: 10px;
+}
+
+.stat-chip {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  text-align: center;
+  min-width: 74px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stat-chip .stat-label {
+  display: block;
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+.stat-chip .stat-value {
+  display: block;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+/* ---------- Timer ---------- */
+#timer-wrap {
+  margin-bottom: 18px;
+}
+
+.timer-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+
+#timer-text {
+  font-weight: 800;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.timer-track {
+  height: 10px;
+  background: var(--bg-soft);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+#timer-bar {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--primary-2), var(--primary));
+  border-radius: 999px;
+  transition: width 0.15s linear;
+}
+
+#timer-wrap.low #timer-bar {
+  background: linear-gradient(90deg, var(--danger), var(--accent));
+}
+
+#timer-wrap.low #timer-text {
+  color: var(--danger);
+}
+
+/* ---------- Number cards ---------- */
+.cards-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 22px 0;
+  flex-wrap: wrap;
+}
+
+.number-card {
+  width: 74px;
+  height: 90px;
+  border-radius: 14px;
+  background: linear-gradient(160deg, var(--surface-2), var(--surface));
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-size: 32px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.15s ease, border-color 0.15s;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.number-card:hover:not(:disabled) {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+}
+
+.number-card:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.number-card.used,
+.number-card:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ---------- Expression display ---------- */
+.expression-shell {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+#expression-display {
+  min-height: 56px;
+  background: var(--bg-soft);
+  border: 2px solid var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-align: center;
+  word-break: break-all;
+}
+
+#expression-display.empty {
+  color: var(--text-dim);
+  font-size: 15px;
+  font-weight: 400;
+}
+
+/* ---------- Keypad ---------- */
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.op-btn {
+  padding: 16px 0;
+  font-size: 20px;
+  font-weight: 800;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.1s, background 0.15s, opacity 0.15s;
+}
+
+.op-btn:hover:not(:disabled) {
+  background: var(--primary);
+  color: #0f1226;
+}
+
+.op-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.op-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.keypad-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.keypad-actions .btn {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* ---------- Feedback popups ---------- */
+.feedback-container {
+  position: relative;
+  height: 0;
+}
+
+.feedback-pop {
+  position: absolute;
+  left: 50%;
+  top: -40px;
+  transform: translateX(-50%);
+  font-size: 20px;
+  font-weight: 900;
+  padding: 8px 20px;
+  border-radius: 999px;
+  white-space: nowrap;
+  animation: pop-in-out 0.9s ease forwards;
+  z-index: 20;
+}
+
+.feedback-correct {
+  background: rgba(53, 214, 138, 0.18);
+  color: var(--success);
+}
+
+.feedback-wrong {
+  background: rgba(255, 92, 122, 0.18);
+  color: var(--danger);
+}
+
+@keyframes pop-in-out {
+  0% { opacity: 0; transform: translate(-50%, 10px) scale(0.8); }
+  20% { opacity: 1; transform: translate(-50%, -6px) scale(1.05); }
+  75% { opacity: 1; transform: translate(-50%, -6px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -26px) scale(0.95); }
+}
+
+.score-float {
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  transform: translateX(-50%);
+  color: var(--accent);
+  font-weight: 900;
+  font-size: 22px;
+  animation: float-up 0.8s ease forwards;
+  z-index: 20;
+}
+
+@keyframes float-up {
+  0% { opacity: 0; transform: translate(-50%, 0); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50px); }
+}
+
+.pulse {
+  animation: pulse-kf 0.4s ease;
+}
+
+@keyframes pulse-kf {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+.shake {
+  animation: shake-kf 0.45s ease;
+}
+
+@keyframes shake-kf {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+
+/* ---------- Hint ---------- */
+#hint-display {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 179, 71, 0.12);
+  color: var(--accent);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ---------- Complete panel ---------- */
+.complete-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.complete-stat {
+  background: var(--bg-soft);
+  border-radius: var(--radius-sm);
+  padding: 16px 8px;
+  text-align: center;
+}
+
+.complete-stat .cs-label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.complete-stat .cs-value {
+  display: block;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--primary-2);
+}
+
+.complete-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
