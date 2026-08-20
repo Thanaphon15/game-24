@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>PRACTICE — GAME24 ONLINE</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="GAME24 ONLINE">
+<meta property="og:title" content="PRACTICE — GAME24 ONLINE">
+<meta property="og:description" content="ฝึกแก้โจทย์เกม 24 แบบไม่จำกัดเวลา มีเฉลยให้ดูได้">
+<meta property="og:image" content="https://tantrarak.github.io/game-24/assets/logo-256.png">
+<meta property="og:url" content="https://tantrarak.github.io/game-24/practice">
+<meta name="twitter:card" content="summary">
 <link rel="icon" type="image/png" href="assets/favicon-32.png?v=2">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/game.css">
@@ -32,7 +39,7 @@
 
   <main class="game-wrap">
     <section id="setup-panel" class="panel">
-      <h2>📘 PRACTICE MODE</h2>
+      <h2 class="shimmer-text">📘 PRACTICE MODE</h2>
       <p class="panel-sub">ฝึกแก้โจทย์ 24 แบบไม่จำกัดเวลา เลือกระดับความยากแล้วเริ่มได้เลย</p>
       <div class="level-grid">
         <button class="level-btn" data-level="1"><span class="lv-num">1</span><span class="lv-name">Beginner</span><span class="lv-mult">×1.0</span></button>
@@ -50,6 +57,7 @@
       <div class="game-topbar">
         <span id="current-level-label" class="level-tag">LEVEL</span>
         <div class="stat-row">
+          <button id="sound-toggle-btn" class="sound-toggle" aria-label="เปิด/ปิดเสียง" type="button">🔊</button>
           <div class="stat-chip">
             <span class="stat-label">SCORE</span>
             <span id="score-value" class="stat-value">0</span>
@@ -92,7 +100,7 @@
     </section>
 
     <section id="complete-panel" class="panel hidden">
-      <h2>🎉 GAME COMPLETE</h2>
+      <h2 class="shimmer-text">🎉 GAME COMPLETE</h2>
       <p class="panel-sub">สรุปผลการฝึกซ้อมของคุณ</p>
       <div class="complete-stats">
         <div class="complete-stat"><span class="cs-label">SCORE</span><span id="final-score" class="cs-value">0</span></div>
@@ -115,6 +123,7 @@
   <script src="js/scoring.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/sound.js"></script>
   <script src="js/game.js"></script>
   <script>
     (async () => {

@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>LEADERBOARD — GAME24 ONLINE</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="GAME24 ONLINE">
+<meta property="og:title" content="🏆 LEADERBOARD — GAME24 ONLINE">
+<meta property="og:description" content="อันดับผู้เล่นคะแนนสูงสุด GAME24 ONLINE — TANTRARAK SCHOOL เปิดดูได้โดยไม่ต้องล็อกอิน">
+<meta property="og:image" content="https://tantrarak.github.io/game-24/assets/logo-256.png">
+<meta property="og:url" content="https://tantrarak.github.io/game-24/ranking">
+<meta name="twitter:card" content="summary">
 <link rel="icon" type="image/png" href="assets/favicon-32.png?v=2">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/responsive.css">
@@ -27,7 +34,7 @@
 
   <header class="hero" style="padding-top:50px;">
     <span class="hero-badge">เปิดดูได้โดยไม่ต้องล็อกอิน</span>
-    <h1>🏆 GAME24 <span class="accent">LEADERBOARD</span></h1>
+    <h1 class="shimmer-text">🏆 GAME24 <span class="accent">LEADERBOARD</span></h1>
     <p id="school-name">TANTRARAK SCHOOL</p>
     <p style="margin-top:6px;">อันดับผู้เล่นคะแนนสูงสุดจากโหมด Challenge ระดับ ม.1–ม.6</p>
   </header>
@@ -43,6 +50,7 @@
         <option value="ม.5">มัธยมศึกษาปีที่ 5</option>
         <option value="ม.6">มัธยมศึกษาปีที่ 6</option>
       </select>
+      <input type="text" id="classroom-filter" placeholder="กรองตามห้อง เช่น ม.3/1" autocomplete="off">
     </div>
 
     <div id="leaderboard-list" class="leaderboard-list"></div>
@@ -67,17 +75,26 @@
     Auth24.renderNavAuthState();
     const listEl = document.getElementById('leaderboard-list');
     const filterEl = document.getElementById('grade-filter');
+    const classroomEl = document.getElementById('classroom-filter');
     const sourceNoteEl = document.getElementById('leaderboard-source-note');
     if (SUPABASE_CONFIGURED) {
       sourceNoteEl.textContent = '* ข้อมูลคะแนนจริงจากผู้เล่นที่ลงทะเบียน อัปเดตทุกครั้งที่มีผู้เล่นจบเกม Challenge';
     }
 
     async function load() {
-      const rows = await Leaderboard24.fetchLeaderboard({ grade: filterEl.value });
+      const rows = await Leaderboard24.fetchLeaderboard({
+        grade: filterEl.value,
+        classroom: classroomEl.value.trim()
+      });
       Leaderboard24.renderLeaderboard(listEl, rows);
     }
 
     filterEl.addEventListener('change', load);
+    let classroomDebounce;
+    classroomEl.addEventListener('input', () => {
+      clearTimeout(classroomDebounce);
+      classroomDebounce = setTimeout(load, 300);
+    });
     load();
   </script>
 </body>

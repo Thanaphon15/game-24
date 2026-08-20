@@ -73,6 +73,10 @@
       });
     }
 
+    const historyLi = document.createElement('li');
+    historyLi.innerHTML = '<a href="history">ประวัติของฉัน</a>';
+    menu.insertBefore(historyLi, registerLink ? registerLink.parentElement : null);
+
     if (user.profile && user.profile.is_admin) {
       const li = document.createElement('li');
       li.innerHTML = '<a href="admin">ADMIN</a>';

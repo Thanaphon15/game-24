@@ -110,6 +110,25 @@
   gap: 10px;
 }
 
+.sound-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--surface);
+  font-size: 17px;
+  cursor: pointer;
+  transition: transform 0.1s, background 0.15s;
+}
+
+.sound-toggle:hover {
+  background: var(--surface-2);
+}
+
+.sound-toggle:active {
+  transform: scale(0.92);
+}
+
 .stat-chip {
   background: var(--surface);
   border-radius: var(--radius-sm);

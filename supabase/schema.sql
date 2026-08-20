@@ -145,6 +145,15 @@ create table if not exists public.scores (
 
 alter table public.scores add column if not exists season int not null default 1;
 
+-- Sanity cap on submitted scores: the highest possible score for one
+-- correct answer is (100 base + 50 time bonus + 100 max streak bonus) *
+-- 3x (Expert multiplier) = 750. A client could still lie within this
+-- bound, but this blocks the trivial "one fake insert with an absurd
+-- score" attack without needing full server-side score recomputation.
+alter table public.scores drop constraint if exists scores_score_plausible;
+alter table public.scores add constraint scores_score_plausible
+  check (score <= correct * 750);
+
 create index if not exists scores_user_id_idx on public.scores(user_id);
 create index if not exists scores_score_idx on public.scores(score desc);
 create index if not exists scores_season_idx on public.scores(season);

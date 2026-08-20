@@ -28,15 +28,17 @@
     { name: 'Player T', grade: 'ม.6', classroom: 'ม.6/4', score: 6210 }
   ].map(row => ({ ...row, school: SCHOOL_NAME }));
 
-  async function fetchLeaderboard({ grade = 'all' } = {}) {
+  async function fetchLeaderboard({ grade = 'all', classroom = '' } = {}) {
     if (!global.SUPABASE_CONFIGURED) {
       let rows = [...MOCK_DATA];
       if (grade !== 'all') rows = rows.filter(r => r.grade === grade);
+      if (classroom) rows = rows.filter(r => r.classroom.toLowerCase().includes(classroom.toLowerCase()));
       return rows.sort((a, b) => b.score - a.score);
     }
 
     let query = sb.from('leaderboard_view').select('*').order('best_score', { ascending: false }).limit(50);
     if (grade !== 'all') query = query.eq('grade', grade);
+    if (classroom) query = query.ilike('classroom', `%${classroom}%`);
     const { data, error } = await query;
     if (error) {
       console.error('[GAME24] fetchLeaderboard error', error);

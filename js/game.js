@@ -38,7 +38,8 @@
         finalBestStreak: document.getElementById('final-best-streak'),
         finalTime: document.getElementById('final-time'),
         playAgainBtn: document.getElementById('play-again-btn'),
-        backHomeBtn: document.getElementById('back-home-btn')
+        backHomeBtn: document.getElementById('back-home-btn'),
+        soundToggleBtn: document.getElementById('sound-toggle-btn')
       };
 
       this.level = 3;
@@ -88,6 +89,17 @@
 
       if (this.el.bestValue) {
         this.el.bestValue.textContent = Scoring24.getBest(this.mode);
+      }
+
+      if (this.el.soundToggleBtn && global.Sound24) {
+        const syncSoundIcon = () => {
+          this.el.soundToggleBtn.textContent = Sound24.isMuted() ? '🔇' : '🔊';
+        };
+        syncSoundIcon();
+        this.el.soundToggleBtn.addEventListener('click', () => {
+          Sound24.setMuted(!Sound24.isMuted());
+          syncSoundIcon();
+        });
       }
     }
 
@@ -275,6 +287,7 @@
     }
 
     registerWrong() {
+      if (global.Sound24) Sound24.wrong();
       this.wrongCount++;
       this.streak = 0;
       this.updateStatsUI();
@@ -282,6 +295,7 @@
     }
 
     handleCorrect() {
+      if (global.Sound24) Sound24.correct();
       this.correctCount++;
       this.streak++;
       this.bestStreak = Math.max(this.bestStreak, this.streak);
@@ -336,6 +350,7 @@
       this.remainingMs = ms;
       this.totalMs = ms;
       this.running = true;
+      this.lastTickSecond = null;
       this.renderTimer();
       this.timerId = setInterval(() => {
         this.remainingMs -= 100;
@@ -365,12 +380,19 @@
       this.el.timerBar.style.width = `${pct}%`;
       const low = seconds <= 5;
       this.el.timerWrap.classList.toggle('low', low);
-      if (low) UI24.pulse(this.el.timerWrap);
+      if (low) {
+        UI24.pulse(this.el.timerWrap);
+        if (global.Sound24 && seconds !== this.lastTickSecond && seconds > 0) {
+          Sound24.tick();
+          this.lastTickSecond = seconds;
+        }
+      }
     }
 
     timeUp() {
       this.running = false;
       this.wrongCount++;
+      if (global.Sound24) Sound24.wrong();
       UI24.popFeedback(this.el.feedbackContainer, '⏰ หมดเวลา!', 'wrong');
       this.endSession();
     }
@@ -378,6 +400,7 @@
     endSession() {
       this.running = false;
       this.stopQuestionTimer();
+      if (global.Sound24) Sound24.complete();
       const totalMs = performance.now() - this.sessionStart;
       const attempts = this.correctCount + this.wrongCount;
       const accuracy = attempts > 0 ? Math.round((this.correctCount / attempts) * 100) : 0;
