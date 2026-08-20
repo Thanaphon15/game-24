@@ -26,7 +26,7 @@
       await sb.auth.signOut();
       return { ok: false, message: 'บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ' };
     }
-    return { ok: true, message: 'เข้าสู่ระบบสำเร็จ กำลังพาไปหน้าหลัก...', redirect: 'index.html' };
+    return { ok: true, message: 'เข้าสู่ระบบสำเร็จ กำลังพาไปหน้าหลัก...', redirect: './' };
   }
 
   async function handleRegister({ name, email, password, school, grade, classroom }) {
@@ -37,7 +37,7 @@
       options: { data: { name, school, grade, classroom } }
     });
     if (error) return { ok: false, message: mapAuthError(error) };
-    return { ok: true, message: 'สมัครสมาชิกสำเร็จ! กำลังพาไปหน้าหลัก...', redirect: 'index.html' };
+    return { ok: true, message: 'สมัครสมาชิกสำเร็จ! กำลังพาไปหน้าหลัก...', redirect: './' };
   }
 
   async function getCurrentUser() {
@@ -50,7 +50,7 @@
 
   async function signOut() {
     if (global.SUPABASE_CONFIGURED) await sb.auth.signOut();
-    location.href = 'index.html';
+    location.href = './';
   }
 
   async function renderNavAuthState() {
@@ -60,10 +60,10 @@
     const user = await getCurrentUser();
     if (!user) return;
 
-    const loginLink = menu.querySelector('a[href="login.html"]');
+    const loginLink = menu.querySelector('a[href="login"]');
     if (loginLink) loginLink.parentElement.remove();
 
-    const registerLink = menu.querySelector('a[href="register.html"]');
+    const registerLink = menu.querySelector('a[href="register"]');
     if (registerLink) {
       registerLink.textContent = `ออกจากระบบ (${user.profile ? user.profile.name : user.email})`;
       registerLink.href = '#';
@@ -75,7 +75,7 @@
 
     if (user.profile && user.profile.is_admin) {
       const li = document.createElement('li');
-      li.innerHTML = '<a href="admin.html">ADMIN</a>';
+      li.innerHTML = '<a href="admin">ADMIN</a>';
       menu.insertBefore(li, registerLink ? registerLink.parentElement : null);
     }
   }

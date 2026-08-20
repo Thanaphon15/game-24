@@ -11,7 +11,7 @@
 
     const user = await Auth24.getCurrentUser();
     if (!user) {
-      gateEl.innerHTML = 'กรุณา<a href="login.html">เข้าสู่ระบบ</a>ด้วยบัญชีผู้ดูแลระบบก่อน';
+      gateEl.innerHTML = 'กรุณา<a href="login">เข้าสู่ระบบ</a>ด้วยบัญชีผู้ดูแลระบบก่อน';
       gateEl.classList.remove('hidden');
       return null;
     }
