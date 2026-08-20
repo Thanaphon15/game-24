@@ -109,7 +109,7 @@
     container.classList.remove('hidden');
     container.innerHTML = `
       <div class="score-card-header">
-        <span>สวัสดี, ${displayName}</span>
+        <span>สวัสดี, ${UI24.escapeHtml(displayName)}</span>
         <span class="score-card-season">ซีซัน ${season}</span>
       </div>
       <div class="score-card-stats">

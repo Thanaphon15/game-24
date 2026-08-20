@@ -90,8 +90,8 @@
         el.innerHTML = `
           <div class="rank">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}</div>
           <div>
-            <div class="rank-name">${row.name}</div>
-            <div class="rank-class">${row.classroom} · ${row.school}</div>
+            <div class="rank-name">${UI24.escapeHtml(row.name)}</div>
+            <div class="rank-class">${UI24.escapeHtml(row.classroom)} · ${UI24.escapeHtml(row.school)}</div>
           </div>
           <div class="rank-score">0</div>
         `;

@@ -1,5 +1,10 @@
 /* ui.js — shared DOM helpers: nav toggle, flash feedback, floating popups */
 (function (global) {
+  const ESCAPE_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  function escapeHtml(str) {
+    return String(str == null ? '' : str).replace(/[&<>"']/g, ch => ESCAPE_MAP[ch]);
+  }
+
   function initNav() {
     const toggle = document.querySelector('.nav-toggle');
     const menu = document.querySelector('.nav-menu');
@@ -51,5 +56,5 @@
     flash(el, 'shake', 450);
   }
 
-  global.UI24 = { initNav, flash, popFeedback, floatScore, pulse, shake };
+  global.UI24 = { initNav, escapeHtml, flash, popFeedback, floatScore, pulse, shake };
 })(window);

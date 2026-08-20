@@ -51,11 +51,11 @@
       el.innerHTML = `
         <div class="admin-info">
           <div class="admin-name">
-            ${row.name}
+            ${UI24.escapeHtml(row.name)}
             ${row.is_admin ? '<span class="tag tag-admin">ADMIN</span>' : ''}
             ${row.is_banned ? '<span class="tag tag-banned">ระงับ</span>' : ''}
           </div>
-          <div class="admin-meta">${row.classroom || '-'} · ${row.school} · สมัคร ${joined}</div>
+          <div class="admin-meta">${UI24.escapeHtml(row.classroom) || '-'} · ${UI24.escapeHtml(row.school)} · สมัคร ${joined}</div>
         </div>
         <div class="admin-actions">
           ${row.id === currentUserId ? '' : `<button class="btn btn-outline btn-sm" data-action="ban">${row.is_banned ? 'เลิกระงับ' : 'ระงับผู้เล่น'}</button>`}
