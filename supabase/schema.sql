@@ -189,23 +189,27 @@ create trigger stamp_score_season_trigger
   for each row execute procedure public.stamp_score_season();
 
 -- ============================================================
--- leaderboard_view: best score per non-banned player, THIS SEASON only
+-- leaderboard_view: best score per non-banned player, THIS SEASON only.
+-- Ties on best_score are broken by achieved_at (earliest wins) — without
+-- this, PostgreSQL doesn't guarantee stable ordering among tied scores,
+-- so rank order among tied players could shuffle between page loads.
 -- ============================================================
 create or replace view public.leaderboard_view
 with (security_invoker = true) as
-select
-  p.id as user_id,
+select distinct on (s.user_id)
+  s.user_id,
   p.name,
   p.school,
   p.grade,
   p.classroom,
-  max(s.score) as best_score
+  s.score as best_score,
+  s.created_at as achieved_at
 from public.scores s
 join public.profiles p on p.id = s.user_id
 cross join public.app_settings st
 where p.is_banned = false
   and s.season = st.current_season
-group by p.id, p.name, p.school, p.grade, p.classroom;
+order by s.user_id, s.score desc, s.created_at asc;
 
 -- ============================================================
 -- player_stats: per-player personal totals for the current season —

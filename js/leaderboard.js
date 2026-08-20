@@ -36,7 +36,12 @@
       return rows.sort((a, b) => b.score - a.score);
     }
 
-    let query = sb.from('leaderboard_view').select('*').order('best_score', { ascending: false }).limit(50);
+    let query = sb
+      .from('leaderboard_view')
+      .select('*')
+      .order('best_score', { ascending: false })
+      .order('achieved_at', { ascending: true }) // ties: earliest to reach that score ranks higher
+      .limit(50);
     if (grade !== 'all') query = query.eq('grade', grade);
     if (classroom) query = query.ilike('classroom', `%${classroom}%`);
     const { data, error } = await query;
