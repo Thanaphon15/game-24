@@ -71,28 +71,39 @@ a {
 .brand {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
+  gap: 10px;
 }
 
 .brand-logo {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  flex-shrink: 0;
 }
 
-.brand-text {
-  background: linear-gradient(90deg, var(--primary-2), var(--primary));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.brand-textstack {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
 }
 
-.brand-text span {
+.brand-title {
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: var(--primary-2);
+}
+
+.brand-title span {
   color: var(--accent);
-  -webkit-text-fill-color: var(--accent);
+}
+
+.brand-subtitle {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--text);
+  white-space: nowrap;
 }
 
 .nav-toggle {
