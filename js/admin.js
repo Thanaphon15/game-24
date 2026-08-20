@@ -37,7 +37,7 @@
     return data;
   }
 
-  function renderUsers(container, rows, handlers) {
+  function renderUsers(container, rows, handlers, currentUserId) {
     container.innerHTML = '';
     if (!rows.length) {
       container.innerHTML = '<p class="admin-empty">ไม่พบผู้เล่น</p>';
@@ -58,11 +58,12 @@
           <div class="admin-meta">${row.classroom || '-'} · ${row.school} · สมัคร ${joined}</div>
         </div>
         <div class="admin-actions">
-          <button class="btn btn-outline btn-sm" data-action="ban">${row.is_banned ? 'เลิกระงับ' : 'ระงับผู้เล่น'}</button>
+          ${row.id === currentUserId ? '' : `<button class="btn btn-outline btn-sm" data-action="ban">${row.is_banned ? 'เลิกระงับ' : 'ระงับผู้เล่น'}</button>`}
           ${row.is_admin ? '' : '<button class="btn btn-danger btn-sm" data-action="delete">ลบถาวร</button>'}
         </div>
       `;
-      el.querySelector('[data-action="ban"]').addEventListener('click', () => handlers.onToggleBan(row));
+      const banBtn = el.querySelector('[data-action="ban"]');
+      if (banBtn) banBtn.addEventListener('click', () => handlers.onToggleBan(row));
       const delBtn = el.querySelector('[data-action="delete"]');
       if (delBtn) delBtn.addEventListener('click', () => handlers.onDelete(row));
       container.appendChild(el);

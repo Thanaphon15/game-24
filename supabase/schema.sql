@@ -66,6 +66,13 @@ begin
     new.is_admin := old.is_admin;
     new.is_banned := old.is_banned;
   end if;
+
+  -- Never allow an account to ban itself through the app, even an admin
+  -- acting on their own row — this is exactly what caused a real lockout.
+  if auth.uid() is not null and auth.uid() = old.id then
+    new.is_banned := false;
+  end if;
+
   return new;
 end;
 $$;

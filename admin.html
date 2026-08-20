@@ -117,7 +117,7 @@
             if (result.ok) refresh();
             else alert(result.message || 'ลบไม่สำเร็จ');
           }
-        });
+        }, user.id);
       }
 
       let debounceId;
