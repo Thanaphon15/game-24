@@ -65,7 +65,7 @@
 
     const registerLink = menu.querySelector('a[href="register"]');
     if (registerLink) {
-      registerLink.textContent = `ออกจากระบบ (${user.profile ? user.profile.name : user.email})`;
+      registerLink.textContent = 'ออกจากระบบ';
       registerLink.href = '#';
       registerLink.addEventListener('click', e => {
         e.preventDefault();
