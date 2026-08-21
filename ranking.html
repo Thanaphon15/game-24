@@ -53,6 +53,8 @@
       <input type="text" id="classroom-filter" placeholder="กรองตามห้อง เช่น ม.3/1" autocomplete="off">
     </div>
 
+    <div class="live-indicator"><span class="live-dot"></span>อัปเดตอัตโนมัติทุก 10 วินาที</div>
+
     <div id="leaderboard-list" class="leaderboard-list"></div>
 
     <p class="leaderboard-note" id="leaderboard-source-note">
@@ -78,7 +80,7 @@
     const classroomEl = document.getElementById('classroom-filter');
     const sourceNoteEl = document.getElementById('leaderboard-source-note');
     if (SUPABASE_CONFIGURED) {
-      sourceNoteEl.textContent = '* ข้อมูลคะแนนจริงจากผู้เล่นที่ลงทะเบียน อัปเดตทุกครั้งที่มีผู้เล่นจบเกม Challenge';
+      sourceNoteEl.textContent = '* คะแนนคือผลรวมสะสมจากทุกรอบที่เล่นในซีซันนี้ อัปเดตแบบเรียลไทม์ระหว่างเล่น ไม่ต้องรอจบเกม';
     }
 
     async function load() {
@@ -96,6 +98,10 @@
       classroomDebounce = setTimeout(load, 300);
     });
     load();
+
+    if (SUPABASE_CONFIGURED) {
+      setInterval(load, 10000);
+    }
   </script>
 </body>
 </html>

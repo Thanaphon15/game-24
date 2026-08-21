@@ -133,6 +133,8 @@
       this.correctCount = 0;
       this.wrongCount = 0;
       this.sessionStart = performance.now();
+      this.serverRowId = null;
+      this.serverRowReady = null;
 
       this.el.setupPanel.classList.add('hidden');
       this.el.completePanel.classList.add('hidden');
@@ -140,6 +142,10 @@
 
       this.updateStatsUI();
       this.nextPuzzle();
+
+      if (this.mode === 'challenge') {
+        this.serverRowReady = this.createServerRow();
+      }
     }
 
     nextPuzzle() {
@@ -317,6 +323,10 @@
       this.updateStatsUI();
       this.stopQuestionTimer();
 
+      if (this.mode === 'challenge') {
+        this.updateServerRow().catch(err => console.error('[GAME24] updateServerRow failed', err));
+      }
+
       setTimeout(() => {
         if (this.mode === 'challenge' && !this.running) return;
         this.nextPuzzle();
@@ -407,7 +417,7 @@
 
       if (this.mode === 'challenge') {
         Scoring24.setBest(this.mode, this.score);
-        this.saveScoreToServer(totalMs).catch(err => console.error('[GAME24] saveScoreToServer failed', err));
+        this.updateServerRow(totalMs).catch(err => console.error('[GAME24] updateServerRow failed', err));
       }
 
       this.el.gamePanel.classList.add('hidden');
@@ -421,20 +431,49 @@
       if (this.el.finalTime) this.el.finalTime.textContent = Scoring24.formatTime(totalMs);
     }
 
-    async saveScoreToServer(durationMs) {
+    // Creates the row for this Challenge session up front (score 0) so
+    // updateServerRow() has something to update live, per correct answer,
+    // instead of only writing once the session ends.
+    async createServerRow() {
       if (typeof Auth24 === 'undefined' || !global.SUPABASE_CONFIGURED) return;
       const user = await Auth24.getCurrentUser();
       if (!user) return;
-      await sb.from('scores').insert({
-        user_id: user.id,
-        mode: this.mode,
-        level: this.level,
-        score: this.score,
-        correct: this.correctCount,
-        wrong: this.wrongCount,
-        best_streak: this.bestStreak,
-        duration_ms: Math.round(durationMs)
-      });
+      const { data, error } = await sb
+        .from('scores')
+        .insert({
+          user_id: user.id,
+          mode: this.mode,
+          level: this.level,
+          score: 0,
+          correct: 0,
+          wrong: 0,
+          best_streak: 0,
+          duration_ms: 0
+        })
+        .select('id')
+        .single();
+      if (error) {
+        console.error('[GAME24] createServerRow insert failed', error);
+        return;
+      }
+      this.serverRowId = data.id;
+    }
+
+    async updateServerRow(finalDurationMs) {
+      if (!this.serverRowReady) return;
+      await this.serverRowReady;
+      if (!this.serverRowId) return;
+      const durationMs = finalDurationMs != null ? finalDurationMs : performance.now() - this.sessionStart;
+      await sb
+        .from('scores')
+        .update({
+          score: this.score,
+          correct: this.correctCount,
+          wrong: this.wrongCount,
+          best_streak: this.bestStreak,
+          duration_ms: Math.round(durationMs)
+        })
+        .eq('id', this.serverRowId);
     }
 
     reset() {

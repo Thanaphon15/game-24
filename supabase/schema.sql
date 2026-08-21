@@ -170,6 +170,16 @@ create policy "users can insert their own scores"
   on public.scores for insert
   with check (auth.uid() = user_id);
 
+-- A Challenge session's row is created at start (score 0) and updated
+-- live after every correct answer, so the leaderboard reflects progress
+-- in real time instead of only appearing once the session ends. Same
+-- plausibility CHECK constraint applies to updates as to inserts.
+drop policy if exists "users can update their own scores" on public.scores;
+create policy "users can update their own scores"
+  on public.scores for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
 -- Every inserted score gets stamped with whatever season is current right
 -- now — callers never need to know/send the season themselves.
 create or replace function public.stamp_score_season()
@@ -189,36 +199,40 @@ create trigger stamp_score_season_trigger
   for each row execute procedure public.stamp_score_season();
 
 -- ============================================================
--- leaderboard_view: best score per non-banned player, THIS SEASON only.
--- Ties on best_score are broken by achieved_at (earliest wins) — without
--- this, PostgreSQL doesn't guarantee stable ordering among tied scores,
--- so rank order among tied players could shuffle between page loads.
+-- leaderboard_view: TOTAL accumulated score (sum of every Challenge
+-- round this season, including in-progress ones) per non-banned player.
+-- Ties are broken by who started accumulating that total earlier —
+-- without a secondary sort, PostgreSQL doesn't guarantee stable order
+-- among tied sums, so rank could shuffle between page loads.
 -- ============================================================
 create or replace view public.leaderboard_view
 with (security_invoker = true) as
-select distinct on (s.user_id)
-  s.user_id,
+select
+  p.id as user_id,
   p.name,
   p.school,
   p.grade,
   p.classroom,
-  s.score as best_score,
-  s.created_at as achieved_at
+  sum(s.score) as total_score,
+  min(s.created_at) as first_played_at
 from public.scores s
 join public.profiles p on p.id = s.user_id
 cross join public.app_settings st
 where p.is_banned = false
   and s.season = st.current_season
-order by s.user_id, s.score desc, s.created_at asc;
+group by p.id, p.name, p.school, p.grade, p.classroom;
 
 -- ============================================================
 -- player_stats: per-player personal totals for the current season —
--- powers the "your score" card shown after login.
+-- powers the "your score" card shown after login. total_score matches
+-- what ranks them on the leaderboard; best_score is kept for reference
+-- (their single best round).
 -- ============================================================
 create or replace view public.player_stats
 with (security_invoker = true) as
 select
   s.user_id,
+  sum(s.score) as total_score,
   max(s.score) as best_score,
   count(*) as games_played,
   max(s.best_streak) as best_streak

@@ -754,6 +754,33 @@ a {
   border-color: var(--primary);
 }
 
+.live-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: live-dot-pulse-kf 1.6s ease-in-out infinite;
+}
+
+@keyframes live-dot-pulse-kf {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(53, 214, 138, 0.5); }
+  50% { opacity: 0.6; box-shadow: 0 0 0 4px rgba(53, 214, 138, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot { animation: none; }
+}
+
 .leaderboard-list {
   display: flex;
   flex-direction: column;

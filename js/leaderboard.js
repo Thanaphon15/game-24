@@ -39,8 +39,8 @@
     let query = sb
       .from('leaderboard_view')
       .select('*')
-      .order('best_score', { ascending: false })
-      .order('achieved_at', { ascending: true }) // ties: earliest to reach that score ranks higher
+      .order('total_score', { ascending: false })
+      .order('first_played_at', { ascending: true }) // ties: whoever started accumulating first ranks higher
       .limit(50);
     if (grade !== 'all') query = query.eq('grade', grade);
     if (classroom) query = query.ilike('classroom', `%${classroom}%`);
@@ -54,7 +54,7 @@
       grade: row.grade,
       classroom: row.classroom,
       school: row.school,
-      score: row.best_score
+      score: row.total_score
     }));
   }
 

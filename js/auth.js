@@ -105,7 +105,7 @@
     }
 
     const [stats, season] = await Promise.all([getPlayerStats(user.id), getCurrentSeason()]);
-    const best = stats ? stats.best_score : 0;
+    const total = stats ? stats.total_score : 0;
     const games = stats ? stats.games_played : 0;
     const streak = stats ? stats.best_streak : 0;
     const displayName = user.profile ? user.profile.name : user.email;
@@ -117,7 +117,7 @@
         <span class="score-card-season">ซีซัน ${season}</span>
       </div>
       <div class="score-card-stats">
-        <div class="score-card-stat"><span class="scs-value">${best.toLocaleString()}</span><span class="scs-label">คะแนนสูงสุด</span></div>
+        <div class="score-card-stat"><span class="scs-value">${total.toLocaleString()}</span><span class="scs-label">คะแนนสะสม</span></div>
         <div class="score-card-stat"><span class="scs-value">${games}</span><span class="scs-label">เกมที่เล่น</span></div>
         <div class="score-card-stat"><span class="scs-value">${streak}</span><span class="scs-label">สตรีคสูงสุด</span></div>
       </div>
