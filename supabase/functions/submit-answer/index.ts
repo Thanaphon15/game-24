@@ -19,6 +19,7 @@ const BASE_SCORE = 100;
 const MAX_TIME_BONUS = 50;
 const STREAK_STEP = 10;
 const STREAK_CAP = 10;
+const MAX_WRONG_ATTEMPTS = 8;
 
 interface Token {
   type: 'num' | 'op' | 'paren';
@@ -195,11 +196,32 @@ Deno.serve(async req => {
     const durationMs = Date.now() - new Date(session.created_at).getTime();
 
     if (!correct) {
+      // Wrong guesses don't consume the round (a genuine player can keep
+      // retrying) — but with no cap, a script could brute-force every
+      // possible expression from the 4 visible numbers by hammering this
+      // endpoint until one happens to be correct, using the server as a
+      // free solver. A real player essentially never needs more than a
+      // handful of wrong tries on one puzzle, so capping it forces the
+      // round to end (and the player to move on) long before brute force
+      // could explore a meaningful fraction of the search space.
+      const newWrongAttempts = (round.wrong_attempts || 0) + 1;
+      const roundOver = newWrongAttempts >= MAX_WRONG_ATTEMPTS;
+
+      await adminClient
+        .from('rounds')
+        .update(
+          roundOver
+            ? { wrong_attempts: newWrongAttempts, used: true, correct: false, answered_at: new Date().toISOString() }
+            : { wrong_attempts: newWrongAttempts }
+        )
+        .eq('id', roundId);
+
       await adminClient
         .from('scores')
         .update({ wrong: session.wrong + 1, current_streak: 0, duration_ms: durationMs })
         .eq('id', session.id);
-      return new Response(JSON.stringify({ correct: false }), { status: 200, headers: cors });
+
+      return new Response(JSON.stringify({ correct: false, roundOver }), { status: 200, headers: cors });
     }
 
     const totalMs = (LEVEL_TIME_SECONDS[round.level] || 25) * 1000;

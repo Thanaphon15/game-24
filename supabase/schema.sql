@@ -253,9 +253,12 @@ create table if not exists public.rounds (
   numbers int[] not null,
   used boolean not null default false,
   correct boolean,
+  wrong_attempts int not null default 0,
   created_at timestamptz not null default now(),
   answered_at timestamptz
 );
+
+alter table public.rounds add column if not exists wrong_attempts int not null default 0;
 
 create index if not exists rounds_session_id_idx on public.rounds(session_id);
 

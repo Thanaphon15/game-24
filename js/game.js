@@ -374,6 +374,13 @@
 
       if (result.correct) {
         this.handleCorrectServer(result);
+      } else if (result.roundOver) {
+        // Tried enough times on this one puzzle (server-enforced cap,
+        // stops brute-forcing every possible expression) — move on to a
+        // fresh question instead of allowing further retries on this one.
+        UI24.popFeedback(this.el.feedbackContainer, '❌ ลองครบจำนวนแล้ว ไปข้อถัดไป', 'wrong');
+        UI24.shake(this.el.expressionDisplay);
+        this.registerWrong({ advance: true });
       } else {
         UI24.popFeedback(this.el.feedbackContainer, '❌ TRY AGAIN', 'wrong');
         UI24.shake(this.el.expressionDisplay);
@@ -381,12 +388,20 @@
       }
     }
 
-    registerWrong() {
+    registerWrong(opts) {
       if (global.Sound24) Sound24.wrong();
       this.wrongCount++;
       this.streak = 0;
       this.updateStatsUI();
-      this.clearAll();
+      if (opts && opts.advance && this.mode === 'challenge') {
+        this.el.submitBtn.disabled = true;
+        setTimeout(() => {
+          if (!this.running) return;
+          this.nextRound();
+        }, 700);
+      } else {
+        this.clearAll();
+      }
     }
 
     // Practice mode: score computed locally purely for on-screen fun
