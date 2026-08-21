@@ -9,6 +9,11 @@
   // as the puzzle bands in puzzle.js (LEVELS 1-5).
   const LEVEL_MULTIPLIER = { 1: 1, 2: 1.2, 3: 1.5, 4: 2, 5: 3 };
 
+  // Just display names — kept here (not in puzzle.js) so challenge.html
+  // can show them without loading puzzle.js at all, which contains the
+  // solving algorithm. Keep in sync with puzzle.js's LEVELS names.
+  const LEVEL_NAMES = { 1: 'Beginner', 2: 'Easy', 3: 'Medium', 4: 'Hard', 5: 'Expert' };
+
   function calcAnswerScore({ remainingMs, totalMs, streak, level }) {
     const ratio = totalMs > 0 ? Math.max(0, Math.min(1, remainingMs / totalMs)) : 0;
     const timeBonus = Math.round(MAX_TIME_BONUS * ratio);
@@ -41,5 +46,5 @@
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }
 
-  global.Scoring24 = { BASE_SCORE, LEVEL_MULTIPLIER, calcAnswerScore, getBest, setBest, formatTime };
+  global.Scoring24 = { BASE_SCORE, LEVEL_MULTIPLIER, LEVEL_NAMES, calcAnswerScore, getBest, setBest, formatTime };
 })(window);

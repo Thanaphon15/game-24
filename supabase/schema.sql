@@ -157,6 +157,7 @@ create table if not exists public.scores (
 );
 
 alter table public.scores add column if not exists season int not null default 1;
+alter table public.scores add column if not exists current_streak int not null default 0;
 
 -- Sanity cap on submitted scores: the highest possible score for one
 -- correct answer is (100 base + 50 time bonus + 100 max streak bonus) *
@@ -228,15 +229,39 @@ create trigger throttle_score_insert_trigger
   before insert on public.scores
   for each row execute procedure public.throttle_score_insert();
 
--- A Challenge session's row is created at start (score 0) and updated
--- live after every correct answer, so the leaderboard reflects progress
--- in real time instead of only appearing once the session ends. Same
--- plausibility CHECK constraint applies to updates as to inserts.
+-- Deliberately NO client UPDATE policy on scores. Score increments now
+-- happen exclusively inside the submit-answer Edge Function using
+-- service_role (which bypasses RLS entirely), after it has itself
+-- verified the answer against the numbers it issued via new-round.
+-- A previous version of this schema had a client-facing "users can
+-- update their own scores" policy for live score updates — that was
+-- exactly the hole that let a client write any score/correct value it
+-- wanted directly via the REST API. Do not re-add it.
 drop policy if exists "users can update their own scores" on public.scores;
-create policy "users can update their own scores"
-  on public.scores for update
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
+
+-- ============================================================
+-- rounds: one row per issued puzzle. Fully server-only — no RLS policy
+-- grants anon/authenticated any access at all, so this table (and the
+-- numbers/answers in it) is invisible from the browser. Only the
+-- new-round and submit-answer Edge Functions touch it, via service_role.
+-- ============================================================
+create table if not exists public.rounds (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  session_id bigint not null references public.scores(id) on delete cascade,
+  level int not null check (level between 1 and 5),
+  numbers int[] not null,
+  used boolean not null default false,
+  correct boolean,
+  created_at timestamptz not null default now(),
+  answered_at timestamptz
+);
+
+create index if not exists rounds_session_id_idx on public.rounds(session_id);
+
+alter table public.rounds enable row level security;
+-- No policies created: RLS with zero policies denies all access to
+-- anon/authenticated roles by default. service_role always bypasses RLS.
 
 -- Every inserted score gets stamped with whatever season is current right
 -- now — callers never need to know/send the season themselves.

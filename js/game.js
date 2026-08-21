@@ -126,7 +126,7 @@
       }
     }
 
-    startSession() {
+    async startSession() {
       this.score = 0;
       this.streak = 0;
       this.bestStreak = 0;
@@ -134,20 +134,29 @@
       this.wrongCount = 0;
       this.sessionStart = performance.now();
       this.serverRowId = null;
-      this.serverRowReady = null;
+      this.currentRoundId = null;
 
       this.el.setupPanel.classList.add('hidden');
       this.el.completePanel.classList.add('hidden');
       this.el.gamePanel.classList.remove('hidden');
 
       this.updateStatsUI();
-      this.nextPuzzle();
 
       if (this.mode === 'challenge') {
-        this.serverRowReady = this.createServerRow();
+        await this.createServerRow();
+        if (!this.serverRowId) {
+          alert('เริ่มเกมไม่สำเร็จ (อาจถูกจำกัดความถี่การเริ่มเกมใหม่ ลองอีกครั้งในอีกสักครู่)');
+          this.reset();
+          return;
+        }
+        await this.nextRound();
+      } else {
+        this.nextPuzzle();
       }
     }
 
+    // Practice mode only — puzzle is generated and solved locally so the
+    // hint button works; nothing here touches the server.
     nextPuzzle() {
       this.puzzle = Puzzle24.generatePuzzle(this.level);
       this.cards = this.puzzle.numbers.map(v => ({ value: v, used: false }));
@@ -157,14 +166,67 @@
       if (this.el.hintDisplay) this.el.hintDisplay.classList.add('hidden');
       if (this.el.levelLabel) {
         const mult = Scoring24.LEVEL_MULTIPLIER[this.level] || 1;
-        this.el.levelLabel.textContent = `LEVEL ${this.level} · ${Puzzle24.LEVELS[this.level].name} · ×${mult} คะแนน`;
+        this.el.levelLabel.textContent = `LEVEL ${this.level} · ${Scoring24.LEVEL_NAMES[this.level]} · ×${mult} คะแนน`;
       }
       this.renderCards();
       this.renderExpression();
       this.updateButtonStates();
+    }
 
-      if (this.mode === 'challenge') {
-        this.resetQuestionTimer(this.puzzle.timeSeconds * 1000);
+    // Challenge mode only — the puzzle (numbers) and its eventual scoring
+    // are decided server-side by the new-round / submit-answer Edge
+    // Functions, so the solving algorithm and answer never reach the
+    // browser and a client can't fabricate correct answers or scores.
+    async nextRound() {
+      this.tokens = [];
+      this.state = 'operand';
+      this.parenDepth = 0;
+      this.cards = [];
+      this.currentRoundId = null;
+      this.renderCards();
+      this.renderExpression();
+      this.updateButtonStates();
+
+      const result = await this.callEdgeFunction('new-round', { level: this.level, sessionId: this.serverRowId });
+      if (!result || result.error) {
+        console.error('[GAME24] nextRound failed', result && result.error);
+        UI24.popFeedback(this.el.feedbackContainer, 'โหลดโจทย์ไม่สำเร็จ ลองกดใหม่', 'wrong');
+        return;
+      }
+
+      this.currentRoundId = result.roundId;
+      this.cards = result.numbers.map(v => ({ value: v, used: false }));
+
+      if (this.el.levelLabel) {
+        const mult = Scoring24.LEVEL_MULTIPLIER[this.level] || 1;
+        this.el.levelLabel.textContent = `LEVEL ${this.level} · ${Scoring24.LEVEL_NAMES[this.level]} · ×${mult} คะแนน`;
+      }
+      this.renderCards();
+      this.renderExpression();
+      this.updateButtonStates();
+      this.resetQuestionTimer(result.timeSeconds * 1000);
+    }
+
+    async callEdgeFunction(name, body) {
+      if (typeof sb === 'undefined' || !global.SUPABASE_CONFIGURED) return { error: 'not configured' };
+      const {
+        data: { session }
+      } = await sb.auth.getSession();
+      if (!session) return { error: 'no session' };
+      try {
+        const res = await fetch(`${global.SUPABASE_URL}/functions/v1/${name}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify(body)
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) return { error: json.error || `HTTP ${res.status}` };
+        return json;
+      } catch (e) {
+        return { error: String(e) };
       }
     }
 
@@ -271,20 +333,47 @@
       this.updateButtonStates();
     }
 
-    submit() {
+    async submit() {
       if (this.el.submitBtn.disabled) return;
-      let result;
-      try {
-        result = Puzzle24.evaluateTokens(this.tokens);
-      } catch (err) {
-        UI24.popFeedback(this.el.feedbackContainer, '❌ หารด้วย 0 ไม่ได้', 'wrong');
-        UI24.shake(this.el.expressionDisplay);
-        this.registerWrong();
+
+      if (this.mode === 'practice') {
+        let result;
+        try {
+          result = Puzzle24.evaluateTokens(this.tokens);
+        } catch (err) {
+          UI24.popFeedback(this.el.feedbackContainer, '❌ หารด้วย 0 ไม่ได้', 'wrong');
+          UI24.shake(this.el.expressionDisplay);
+          this.registerWrong();
+          return;
+        }
+        if (Puzzle24.isTwentyFour(result)) {
+          this.handleCorrectLocal();
+        } else {
+          UI24.popFeedback(this.el.feedbackContainer, '❌ TRY AGAIN', 'wrong');
+          UI24.shake(this.el.expressionDisplay);
+          this.registerWrong();
+        }
         return;
       }
 
-      if (Puzzle24.isTwentyFour(result)) {
-        this.handleCorrect();
+      // Challenge mode: the server verifies the answer and decides the
+      // score — this client never computes or asserts correctness itself.
+      this.el.submitBtn.disabled = true;
+      const tokensPayload = this.tokens.map(t => ({ type: t.type, value: t.value }));
+      const result = await this.callEdgeFunction('submit-answer', {
+        roundId: this.currentRoundId,
+        tokens: tokensPayload
+      });
+      this.updateButtonStates();
+
+      if (!result || result.error) {
+        console.error('[GAME24] submit-answer failed', result && result.error);
+        UI24.popFeedback(this.el.feedbackContainer, 'ตรวจคำตอบไม่สำเร็จ ลองใหม่', 'wrong');
+        return;
+      }
+
+      if (result.correct) {
+        this.handleCorrectServer(result);
       } else {
         UI24.popFeedback(this.el.feedbackContainer, '❌ TRY AGAIN', 'wrong');
         UI24.shake(this.el.expressionDisplay);
@@ -300,15 +389,17 @@
       this.clearAll();
     }
 
-    handleCorrect() {
+    // Practice mode: score computed locally purely for on-screen fun
+    // feedback — never saved online, so there's nothing to protect.
+    handleCorrectLocal() {
       if (global.Sound24) Sound24.correct();
       this.correctCount++;
       this.streak++;
       this.bestStreak = Math.max(this.bestStreak, this.streak);
 
       const scoreInfo = Scoring24.calcAnswerScore({
-        remainingMs: this.mode === 'challenge' ? this.remainingMs : 0,
-        totalMs: this.mode === 'challenge' ? this.totalMs : 0,
+        remainingMs: 0,
+        totalMs: 0,
         streak: this.streak,
         level: this.level
       });
@@ -321,15 +412,30 @@
       if (this.streak > 1) UI24.pulse(this.el.streakValue);
 
       this.updateStatsUI();
+
+      setTimeout(() => this.nextPuzzle(), 550);
+    }
+
+    // Challenge mode: score/streak come from the server's response to
+    // submit-answer — the client just reflects them in the UI.
+    handleCorrectServer(result) {
+      if (global.Sound24) Sound24.correct();
+      this.correctCount++;
+      this.streak = result.newStreak;
+      this.bestStreak = Math.max(this.bestStreak, this.streak);
+      this.score = result.newScore;
+
+      UI24.popFeedback(this.el.feedbackContainer, '🎉 CORRECT!', 'correct');
+      UI24.floatScore(this.el.feedbackContainer, result.gained);
+      UI24.pulse(this.el.scoreValue);
+      if (this.streak > 1) UI24.pulse(this.el.streakValue);
+
+      this.updateStatsUI();
       this.stopQuestionTimer();
 
-      if (this.mode === 'challenge') {
-        this.updateServerRow().catch(err => console.error('[GAME24] updateServerRow failed', err));
-      }
-
       setTimeout(() => {
-        if (this.mode === 'challenge' && !this.running) return;
-        this.nextPuzzle();
+        if (!this.running) return;
+        this.nextRound();
       }, 550);
     }
 
@@ -337,7 +443,11 @@
       this.wrongCount++;
       this.streak = 0;
       this.updateStatsUI();
-      this.nextPuzzle();
+      if (this.mode === 'challenge') {
+        this.nextRound();
+      } else {
+        this.nextPuzzle();
+      }
     }
 
     showHint() {
@@ -417,7 +527,8 @@
 
       if (this.mode === 'challenge') {
         Scoring24.setBest(this.mode, this.score);
-        this.updateServerRow(totalMs).catch(err => console.error('[GAME24] updateServerRow failed', err));
+        // Nothing to save here — submit-answer already kept the scores
+        // row updated live after every correct answer, server-side.
       }
 
       this.el.gamePanel.classList.add('hidden');
@@ -431,9 +542,10 @@
       if (this.el.finalTime) this.el.finalTime.textContent = Scoring24.formatTime(totalMs);
     }
 
-    // Creates the row for this Challenge session up front (score 0) so
-    // updateServerRow() has something to update live, per correct answer,
-    // instead of only writing once the session ends.
+    // Creates the row for this Challenge session up front (score 0).
+    // From here on, only the submit-answer Edge Function (via
+    // service_role) ever updates this row's score/correct/streak —
+    // the client has no UPDATE rights on scores at all.
     async createServerRow() {
       if (typeof Auth24 === 'undefined' || !global.SUPABASE_CONFIGURED) return;
       const user = await Auth24.getCurrentUser();
@@ -457,23 +569,6 @@
         return;
       }
       this.serverRowId = data.id;
-    }
-
-    async updateServerRow(finalDurationMs) {
-      if (!this.serverRowReady) return;
-      await this.serverRowReady;
-      if (!this.serverRowId) return;
-      const durationMs = finalDurationMs != null ? finalDurationMs : performance.now() - this.sessionStart;
-      await sb
-        .from('scores')
-        .update({
-          score: this.score,
-          correct: this.correctCount,
-          wrong: this.wrongCount,
-          best_streak: this.bestStreak,
-          duration_ms: Math.round(durationMs)
-        })
-        .eq('id', this.serverRowId);
     }
 
     reset() {
