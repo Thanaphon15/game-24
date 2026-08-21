@@ -58,10 +58,13 @@
           <div class="admin-meta">${UI24.escapeHtml(row.classroom) || '-'} · ${UI24.escapeHtml(row.school)} · สมัคร ${joined}</div>
         </div>
         <div class="admin-actions">
+          <button class="btn btn-ghost btn-sm" data-action="view">ดูโปรไฟล์</button>
           ${row.id === currentUserId ? '' : `<button class="btn btn-outline btn-sm" data-action="ban">${row.is_banned ? 'เลิกระงับ' : 'ระงับผู้เล่น'}</button>`}
           ${row.is_admin ? '' : '<button class="btn btn-danger btn-sm" data-action="delete">ลบถาวร</button>'}
         </div>
       `;
+      const viewBtn = el.querySelector('[data-action="view"]');
+      if (viewBtn) viewBtn.addEventListener('click', () => handlers.onView(row));
       const banBtn = el.querySelector('[data-action="ban"]');
       if (banBtn) banBtn.addEventListener('click', () => handlers.onToggleBan(row));
       const delBtn = el.querySelector('[data-action="delete"]');
@@ -86,6 +89,17 @@
       .eq('id', true);
     if (error) console.error('[GAME24] startNewSeason error', error);
     return !error;
+  }
+
+  async function updateProfileName(userId, newName) {
+    const trimmed = (newName || '').trim();
+    if (!trimmed) return { ok: false, message: 'ชื่อห้ามเว้นว่าง' };
+    const { error } = await sb.from('profiles').update({ name: trimmed }).eq('id', userId);
+    if (error) {
+      console.error('[GAME24] updateProfileName error', error);
+      return { ok: false, message: 'แก้ไขชื่อไม่สำเร็จ' };
+    }
+    return { ok: true };
   }
 
   async function toggleBan(userId, currentlyBanned) {
@@ -119,6 +133,7 @@
     guardAdminPage,
     loadUsers,
     renderUsers,
+    updateProfileName,
     toggleBan,
     deleteUserPermanently,
     getSeasonInfo,

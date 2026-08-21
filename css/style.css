@@ -863,6 +863,54 @@ a {
   color: var(--primary-2);
 }
 
+/* ---------- Modal (admin profile viewer) ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 8, 20, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 200;
+}
+
+.modal-box {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 28px 24px 24px;
+  box-shadow: var(--shadow);
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-soft);
+  color: var(--text);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  background: var(--surface-2);
+}
+
+.profile-modal-subhead {
+  font-size: 14px;
+  color: var(--primary-2);
+  margin-bottom: 10px;
+}
+
 /* ---------- Badges & history ---------- */
 .badges-row {
   display: flex;
