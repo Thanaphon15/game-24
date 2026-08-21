@@ -8,8 +8,9 @@
     { id: 'warrior50', icon: '⚔️', name: 'นักสู้ 50 เกม', test: s => s.games >= 50 },
     { id: 'streak10', icon: '🔥', name: 'สตรีคเทพ (10+)', test: s => s.bestStreak >= 10 },
     { id: 'accurate', icon: '🎯', name: 'แม่นยำ (≥80%)', test: s => s.attempts >= 20 && s.accuracy >= 80 },
-    { id: 'expert', icon: '👑', name: 'Expert Master', test: s => s.playedExpert },
-    { id: 'kilo', icon: '💯', name: 'คะแนนทะลุ 1000', test: s => s.maxScore >= 1000 }
+    { id: 'expert', icon: '👑', name: 'Expert Master', test: s => s.expertStreak3 },
+    { id: 'kilo', icon: '💯', name: 'คะแนนทะลุ 1000', test: s => s.maxScore >= 1000 },
+    { id: 'deity', icon: '🔱', name: 'เทพเจ้า', test: s => s.maxScore >= 100000 }
   ];
 
   async function fetchHistory(userId, limit) {
@@ -33,8 +34,8 @@
     const accuracy = attempts > 0 ? Math.round((correctSum / attempts) * 100) : 0;
     const bestStreak = rows.reduce((max, r) => Math.max(max, r.best_streak), 0);
     const maxScore = rows.reduce((max, r) => Math.max(max, r.score), 0);
-    const playedExpert = rows.some(r => r.level === 5);
-    return { games, attempts, accuracy, bestStreak, maxScore, playedExpert };
+    const expertStreak3 = rows.some(r => r.level === 5 && r.best_streak >= 3);
+    return { games, attempts, accuracy, bestStreak, maxScore, expertStreak3 };
   }
 
   function computeBadges(rows) {
