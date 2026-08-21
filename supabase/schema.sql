@@ -205,7 +205,11 @@ create trigger stamp_score_season_trigger
 -- without a secondary sort, PostgreSQL doesn't guarantee stable order
 -- among tied sums, so rank could shuffle between page loads.
 -- ============================================================
-create or replace view public.leaderboard_view
+-- Dropped and recreated (not CREATE OR REPLACE) because the column set
+-- changed from an earlier version — Postgres won't let REPLACE rename
+-- or reorder view columns, only append to the end.
+drop view if exists public.leaderboard_view;
+create view public.leaderboard_view
 with (security_invoker = true) as
 select
   p.id as user_id,
@@ -228,7 +232,8 @@ group by p.id, p.name, p.school, p.grade, p.classroom;
 -- what ranks them on the leaderboard; best_score is kept for reference
 -- (their single best round).
 -- ============================================================
-create or replace view public.player_stats
+drop view if exists public.player_stats;
+create view public.player_stats
 with (security_invoker = true) as
 select
   s.user_id,
