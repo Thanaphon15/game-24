@@ -10,7 +10,12 @@
     display: flex;
   }
 
+  /* display:none/flex toggle, not max-height:0 — a max-height collapse on
+     a flex column lets the first item's min-content height peek through
+     in some browsers (seen on iOS Safari: the first link stayed visible
+     before the menu was ever opened). display:none has no such quirk. */
   .nav-menu {
+    display: none;
     position: absolute;
     top: 100%;
     left: 0;
@@ -20,18 +25,16 @@
     background: var(--bg-soft);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     padding: 10px 16px 16px;
-    gap: 4px;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.2s ease;
+    gap: 6px;
   }
 
   .nav-menu.open {
-    max-height: 400px;
+    display: flex;
   }
 
   .nav-menu a {
-    padding: 12px 14px;
+    padding: 16px;
+    font-size: 15px;
   }
 
   .mode-grid {
