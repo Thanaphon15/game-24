@@ -67,9 +67,15 @@ begin
     new.is_banned := old.is_banned;
   end if;
 
-  -- Never allow an account to ban itself through the app, even an admin
-  -- acting on their own row — this is exactly what caused a real lockout.
-  if auth.uid() is not null and auth.uid() = old.id then
+  -- Block only the act of *banning yourself* (false -> true) through the
+  -- app — this is what caused a real admin lockout. Fixed version of an
+  -- earlier bug: this used to unconditionally force is_banned to false
+  -- on ANY self-update, which let a banned player unban themselves just
+  -- by editing their own name. Now it only ever blocks the OFF->ON
+  -- transition; an already-banned user's self-update leaves is_banned
+  -- untouched (still true).
+  if auth.uid() is not null and auth.uid() = old.id
+     and new.is_banned and not old.is_banned then
     new.is_banned := false;
   end if;
 
@@ -84,10 +90,17 @@ create trigger protect_profile_privileges_trigger
 
 alter table public.profiles enable row level security;
 
+-- Own profile, or an admin reading anyone's — NOT fully public. This
+-- keeps is_admin/is_banned from being queryable by anonymous requests
+-- or by other students. The public Leaderboard still works because
+-- leaderboard_view/player_stats (below) run without security_invoker,
+-- so they can join profiles for just name/school/grade/classroom
+-- regardless of this policy, without ever selecting is_admin/is_banned.
 drop policy if exists "profiles are publicly readable" on public.profiles;
-create policy "profiles are publicly readable"
+drop policy if exists "own profile or admin can read profiles" on public.profiles;
+create policy "own profile or admin can read profiles"
   on public.profiles for select
-  using (true);
+  using (auth.uid() = id or public.is_admin(auth.uid()));
 
 drop policy if exists "users can update their own profile" on public.profiles;
 create policy "users can update their own profile"
@@ -160,15 +173,60 @@ create index if not exists scores_season_idx on public.scores(season);
 
 alter table public.scores enable row level security;
 
+-- Raw per-round rows are only readable by signed-in accounts (not fully
+-- public) — the public Leaderboard page reads leaderboard_view instead,
+-- which exposes just the aggregated total, not this granular history.
 drop policy if exists "scores are publicly readable" on public.scores;
-create policy "scores are publicly readable"
+drop policy if exists "signed-in users can read scores" on public.scores;
+create policy "signed-in users can read scores"
   on public.scores for select
-  using (true);
+  using (auth.uid() is not null);
 
 drop policy if exists "users can insert their own scores" on public.scores;
 create policy "users can insert their own scores"
   on public.scores for insert
   with check (auth.uid() = user_id);
+
+-- Throttle: blocks the "loop calling insert() thousands of times" attack
+-- that let a fake total_score grow without bound now that the leaderboard
+-- sums every row. A real Challenge session can only start this often
+-- through real UI interaction; a script trying to mint many rows fast
+-- gets rejected. This raises the bar a lot but is not a perfect fix —
+-- true elimination needs server-side score recomputation.
+create or replace function public.throttle_score_insert()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  last_insert timestamptz;
+  recent_count int;
+begin
+  select max(created_at) into last_insert
+  from public.scores
+  where user_id = new.user_id;
+
+  if last_insert is not null and now() - last_insert < interval '2 seconds' then
+    raise exception 'กำลังบันทึกเกมก่อนหน้าอยู่ กรุณารอสักครู่ก่อนเริ่มเกมใหม่';
+  end if;
+
+  select count(*) into recent_count
+  from public.scores
+  where user_id = new.user_id
+    and created_at > now() - interval '24 hours';
+
+  if recent_count >= 200 then
+    raise exception 'เล่นครบโควตาต่อวันแล้ว กรุณาลองใหม่พรุ่งนี้';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists throttle_score_insert_trigger on public.scores;
+create trigger throttle_score_insert_trigger
+  before insert on public.scores
+  for each row execute procedure public.throttle_score_insert();
 
 -- A Challenge session's row is created at start (score 0) and updated
 -- live after every correct answer, so the leaderboard reflects progress
@@ -208,9 +266,14 @@ create trigger stamp_score_season_trigger
 -- Dropped and recreated (not CREATE OR REPLACE) because the column set
 -- changed from an earlier version — Postgres won't let REPLACE rename
 -- or reorder view columns, only append to the end.
+-- No security_invoker: this view intentionally runs with the view
+-- owner's privileges so it can still be read by anonymous visitors (the
+-- public Leaderboard requirement) even though the underlying profiles/
+-- scores tables now require auth.uid() to be set. Safe because the view
+-- only ever selects the aggregate columns listed below — never
+-- is_admin/is_banned or per-round rows.
 drop view if exists public.leaderboard_view;
-create view public.leaderboard_view
-with (security_invoker = true) as
+create view public.leaderboard_view as
 select
   p.id as user_id,
   p.name,
@@ -233,8 +296,7 @@ group by p.id, p.name, p.school, p.grade, p.classroom;
 -- (their single best round).
 -- ============================================================
 drop view if exists public.player_stats;
-create view public.player_stats
-with (security_invoker = true) as
+create view public.player_stats as
 select
   s.user_id,
   sum(s.score) as total_score,
