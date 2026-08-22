@@ -60,8 +60,7 @@ h1, h2, h3,
 .lv-name,
 .cs-label,
 .level-tag,
-.badge-chip,
-.nav-menu a {
+.badge-chip {
   font-family: var(--font-display);
   letter-spacing: 0.5px;
 }
@@ -155,18 +154,28 @@ h1, h2, h3,
   box-shadow: 0 0 14px rgba(255, 200, 87, 0.25);
 }
 
+/* Three explicit layers (tint, solid surface, border gradient) with matching
+   background-clip — the 2-layer version left the padding-box area showing
+   almost-transparent tint straight over the border gradient underneath it,
+   which read as one solid bright block instead of a tinted dark card. */
 .level-btn.selected {
   border-color: var(--gem-blue);
-  background-image:
-    linear-gradient(rgba(79, 195, 255, 0.18), rgba(79, 195, 255, 0.18)),
-    linear-gradient(135deg, var(--gold-bright), var(--gem-blue) 45%, var(--gold-deep) 75%, var(--gold-bright));
   color: var(--gem-blue);
+  background-image:
+    linear-gradient(rgba(79, 195, 255, 0.25), rgba(79, 195, 255, 0.25)),
+    linear-gradient(var(--surface), var(--surface)),
+    linear-gradient(135deg, var(--gold-bright), var(--gem-blue) 45%, var(--gold-deep) 75%, var(--gold-bright));
+  background-origin: border-box;
+  background-clip: padding-box, padding-box, border-box;
 }
 
 .rank-row.top-1 {
   background-image:
-    linear-gradient(rgba(255, 212, 71, 0.1), rgba(255, 212, 71, 0.1)),
+    linear-gradient(rgba(255, 212, 71, 0.14), rgba(255, 212, 71, 0.14)),
+    linear-gradient(var(--surface), var(--surface)),
     linear-gradient(135deg, var(--gold-bright), var(--gem-blue) 45%, var(--gold-deep) 75%, var(--gold-bright));
+  background-origin: border-box;
+  background-clip: padding-box, padding-box, border-box;
 }
 
 /* ---------- Mascot art ---------- */
@@ -174,7 +183,7 @@ h1, h2, h3,
   display: block;
   max-width: 220px;
   width: 45%;
-  margin: 10px auto -64px;
+  margin: 10px auto -30px;
   filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.55));
 }
 
@@ -183,6 +192,13 @@ h1, h2, h3,
   justify-content: center;
   position: relative;
   z-index: 2;
+}
+
+/* Push the panel's own heading down clear of the overlapping mascot image —
+   the image only needs to bleed over the panel's decorative top edge, not
+   sit on top of the "PRACTICE MODE" text itself. */
+.mode-mascot-wrap + .panel {
+  padding-top: 56px;
 }
 
 .mode-mascot-glow {
