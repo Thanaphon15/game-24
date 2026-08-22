@@ -82,7 +82,12 @@ h1, h2, h3,
 .stat-chip,
 .complete-stat,
 .level-btn,
-.number-card {
+.number-card,
+.badge-chip,
+.history-row,
+.guide-mode-card,
+.guide-level-row,
+.guide-num {
   position: relative;
   border: 1px solid transparent;
   background-image:
