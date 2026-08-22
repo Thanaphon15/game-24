@@ -1,0 +1,211 @@
+/* fantasy.css — ornate fantasy-RPG theme layer, loaded after style.css/game.css.
+   Restyles the existing components in place (same class names) rather than
+   replacing them, so every page picks this up automatically. Character/frame
+   art is added incrementally as more assets arrive — see .mascot-lion below;
+   pages without an asset yet just keep the CSS-only ornate look. */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&display=swap');
+
+:root {
+  --bg: #090c1a;
+  --bg-soft: #10142c;
+  --surface: rgba(24, 29, 58, 0.82);
+  --surface-2: rgba(35, 41, 78, 0.9);
+  --primary: #6f8cff;
+  --primary-2: #4fc3ff;
+  --accent: #ffc857;
+  --gold-deep: #d9a441;
+  --gold-bright: #ffe1a0;
+  --gem-blue: #4fc3ff;
+  --font-display: 'Cinzel', var(--font);
+}
+
+/* ---------- Fantasy background, fixed behind every page ---------- */
+body {
+  position: relative;
+  background: var(--bg);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background-image:
+    linear-gradient(180deg, rgba(6, 8, 18, 0.78), rgba(6, 8, 18, 0.92) 55%, rgba(6, 8, 18, 0.98)),
+    url('../assets/bg-fantasy-main.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse at 50% 0%, rgba(79, 195, 255, 0.08), transparent 60%);
+  pointer-events: none;
+}
+
+/* ---------- Display font on headings ---------- */
+h1, h2, h3,
+.brand-title,
+.hero h1,
+.section-title,
+.gate-logo,
+.panel h2,
+.stat-label,
+.lv-name,
+.cs-label,
+.level-tag,
+.badge-chip,
+.nav-menu a {
+  font-family: var(--font-display);
+  letter-spacing: 0.5px;
+}
+
+/* ---------- Gem-frame border utility ----------
+   Used on cards, panels, buttons: a slim gold/sapphire gradient ring
+   standing in for the illustrated gem-corner frame until that asset
+   is dropped in — swap the gradient stops for a border-image later
+   without touching the layout. */
+.gem-frame,
+.panel,
+.mode-card,
+.score-card,
+.auth-wrap,
+.gate-card,
+.rank-row,
+.admin-row,
+.modal-box,
+.stat-chip,
+.complete-stat,
+.level-btn,
+.number-card {
+  position: relative;
+  border: 1px solid transparent;
+  background-image:
+    linear-gradient(var(--surface), var(--surface)),
+    linear-gradient(135deg, var(--gold-bright), var(--gem-blue) 45%, var(--gold-deep) 75%, var(--gold-bright));
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+.mode-card,
+.panel,
+.auth-wrap,
+.gate-card,
+.modal-box {
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(217, 164, 65, 0.15);
+}
+
+.panel, .mode-card, .gate-card {
+  overflow: visible;
+}
+
+/* ---------- Nav: ornate banner ---------- */
+.site-nav {
+  background: linear-gradient(180deg, rgba(9, 11, 24, 0.94), rgba(9, 11, 24, 0.86));
+  border-bottom: none;
+  box-shadow: 0 1px 0 var(--gold-deep), 0 4px 18px rgba(0, 0, 0, 0.45);
+}
+
+.brand-title {
+  color: var(--gold-bright);
+  text-shadow: 0 0 12px rgba(255, 200, 87, 0.35);
+}
+
+.brand-title span {
+  color: var(--gem-blue);
+}
+
+.nav-menu a.active,
+.nav-menu a:hover {
+  background: rgba(217, 164, 65, 0.14);
+  color: var(--gold-bright);
+}
+
+.nav-menu a.nav-cta {
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold-bright));
+  color: #241705;
+  box-shadow: 0 0 14px rgba(255, 200, 87, 0.3);
+}
+
+/* ---------- Buttons: gold/sapphire gem style ---------- */
+.btn-primary {
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold-bright));
+  color: #241705;
+  box-shadow: 0 8px 20px rgba(217, 164, 65, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 10px 26px rgba(217, 164, 65, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+}
+
+.btn-outline {
+  background: rgba(24, 29, 58, 0.6);
+  border: 2px solid var(--gold-deep);
+  color: var(--gold-bright);
+}
+
+.btn-outline:hover:not(:disabled) {
+  border-color: var(--gold-bright);
+  box-shadow: 0 0 14px rgba(255, 200, 87, 0.25);
+}
+
+.level-btn.selected {
+  border-color: var(--gem-blue);
+  background-image:
+    linear-gradient(rgba(79, 195, 255, 0.18), rgba(79, 195, 255, 0.18)),
+    linear-gradient(135deg, var(--gold-bright), var(--gem-blue) 45%, var(--gold-deep) 75%, var(--gold-bright));
+  color: var(--gem-blue);
+}
+
+.rank-row.top-1 {
+  background-image:
+    linear-gradient(rgba(255, 212, 71, 0.1), rgba(255, 212, 71, 0.1)),
+    linear-gradient(135deg, var(--gold-bright), var(--gem-blue) 45%, var(--gold-deep) 75%, var(--gold-bright));
+}
+
+/* ---------- Mascot art ---------- */
+.mode-mascot {
+  display: block;
+  max-width: 220px;
+  width: 45%;
+  margin: 10px auto -64px;
+  filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.55));
+}
+
+.mode-mascot-wrap {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+}
+
+.mode-mascot-glow {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 55%;
+  height: 22px;
+  background: radial-gradient(ellipse, rgba(79, 195, 255, 0.45), transparent 70%);
+  filter: blur(4px);
+  z-index: -1;
+}
+
+.hero-mascot {
+  max-width: 260px;
+  width: 60%;
+  margin: 0 auto 4px;
+  display: block;
+  filter: drop-shadow(0 20px 26px rgba(0, 0, 0, 0.6));
+}
+
+@media (max-width: 640px) {
+  .mode-mascot { max-width: 150px; margin-top: -46px; }
+  .hero-mascot { max-width: 180px; }
+}
