@@ -60,12 +60,14 @@ a {
 }
 
 .nav-inner {
-  max-width: 1100px;
+  max-width: 1240px;
   margin: 0 auto;
   padding: 14px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 8px;
 }
 
 .brand {
@@ -131,6 +133,7 @@ a {
 .nav-menu {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   list-style: none;
 }
@@ -141,6 +144,7 @@ a {
   font-weight: 600;
   font-size: 14px;
   color: var(--text-dim);
+  white-space: nowrap;
   transition: background 0.15s, color 0.15s;
 }
 
